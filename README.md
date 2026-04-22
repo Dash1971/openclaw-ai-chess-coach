@@ -1,80 +1,92 @@
 # OpenClaw AI Chess Coach
 
-OpenClaw AI Chess Coach is a practical template for building a **local-first chess assistant** with **OpenClaw**.
+OpenClaw AI Chess Coach is a generic OpenClaw-based chess analysis and training stack built around reusable chess skills, reusable chess tooling, and lightweight example data.
 
-OpenClaw is an AI assistant framework that can run skills, tools, and repeatable workflows on your own machine. In this repo, it is used as the orchestration layer around a chess corpus, study-sync scripts, and chess-specific analysis tools.
+It is designed to support workflows such as:
+- opening study sync and search
+- game analysis against a local corpus
+- opponent scouting
+- opening-study extraction from public accounts
+- concept and cheat-sheet generation
+- speedrun account PGN extraction from chess.com
 
-It shows how to combine:
-- reusable OpenClaw skills
-- local chess tooling
-- a PGN corpus
-- study-source sync scripts
-- example workflows for coaching, scouting, and opening prep
+This public repo is the **generic, publishable** layer.
 
-If you want to build your own chess coach that can search your games, analyze patterns, generate study material, and answer chess questions against a local database, this repo is meant to give you a clean starting point.
-
----
-
-## Start here
-
-If you are new to OpenClaw:
-
-1. install OpenClaw: <https://docs.openclaw.ai>
-2. install the Python dependencies: `pip install -r requirements.txt`
-3. read `docs/index.md`
-4. inspect `examples/`
-5. adapt the skills and tools to your own corpus and opening repertoire
+It does **not** contain the full working corpus or the full set of generated outputs used in day-to-day operation. Those live in a separate private companion repo.
 
 ---
 
-## What you can do with it
+## What this repo includes
 
-This repo is built around a few concrete workflows:
+### Skills
+- `openings-coach` — opening-oriented analysis and coaching workflows
+- `chess-opponent-scout` — generic username-driven opponent/account scouting
+- `chess-opening-study` — extract and shape opening-study material
+- `chess-concepts` — maintain concept documents around recurring opening themes
+- `chess-db-sync` — sync study-based source material into the local database layer
+- `chess-speedrun-pgn-extractor` — fetch and chunk chess.com speedrun account games for later study ingestion
 
-- **Sync an opening database** from study/source lists into a local PGN corpus
-- **Search that corpus** by move order, structure, theme, or natural-language question
-- **Analyze games** against an opening-specific reference database
-- **Scout opponents** from public chess accounts
-- **Extract opening study material** from public player histories
-- **Generate concept sheets and opening cheat sheets** from recurring patterns in the corpus
-- **Pull and chunk speedrun PGNs** from chess.com for later study import
+### Chess tools
+The `chess_tools/` layer contains the reusable code behind the workflows, including:
+- PGN parsing
+- search/query logic
+- study sync logic
+- tagging helpers
+- diagram helpers
+- PGN comment sanitation helpers
+- PDF/document generators where markdown has not yet fully replaced export-oriented flows
 
-The included opening families — **Stonewall**, **French**, and **Habits** — are examples. The same structure can be adapted to any repertoire you want to study.
+### Docs
+The `docs/` tree is the canonical documentation layer.
+
+The long-term direction is **markdown-first documentation** that can be read and reviewed directly in GitHub.
+
+### Minimal example data
+The `examples/` tree holds a small public-safe sample layer only:
+- sample PGN
+- sample source list
+- example queries
+
+This repo is intentionally not bundled with the full operating corpus.
 
 ---
 
-## Who this is for
+## Example opening families
 
-This repo is for people who want to:
-- use OpenClaw for a serious personal chess workflow
-- keep their own study corpus locally
-- build reproducible chess-analysis pipelines instead of one-off chat prompts
-- adapt a working system rather than start from scratch
+The repo uses the following as **example repertoires / example study families**:
+- Stonewall
+- French
+- Habits
+
+These are included as examples of how the system can be organized and studied.
+
+They should not be read as hidden assumptions that the code only works for one private setup.
 
 ---
 
-## How to use this repo
+## What this repo does not include
 
-### 1. Read the docs
-Start with:
-- `docs/index.md`
-- `docs/setup.md`
-- `docs/workflows.md`
-- `docs/search-system.md`
-- `docs/opening-families.md`
+This public repo intentionally does not include:
+- the full working `games.pgn` corpus
+- the full operational source list set
+- generated PDFs as canonical source documents
+- one-off historical reconstruction scripts
+- historical archive clutter and intermediate import artifacts
 
-### 2. Explore the example layer
-The `examples/` directory gives you a small sample PGN, a sample source list, and example queries so you can see the structure without needing a full corpus first.
+Those belong either in the private data companion repo or in the retire/drop bucket.
 
-### 3. Point the tooling at your own data
-For real use, replace the sample inputs with your own:
-- PGN corpus
-- source/study lists
-- target openings
-- generated documents or reports
+---
 
-### 4. Wire the skills into OpenClaw
-The `skills/` directory shows how the agent-facing layer is organized, while `chess_tools/` contains the reusable code those workflows depend on.
+## Private companion repo
+
+The private companion repo is:
+- `chess-data-private`
+
+That repo is intended to hold:
+- full corpus data
+- full source lists
+- generated PDFs and other working outputs
+- larger operating data that should stay private while still being synced for recovery/review
 
 ---
 
@@ -88,44 +100,38 @@ docs/
 skills/
 chess_tools/
 examples/
-scripts/
 ```
 
 ### `docs/`
-Readable documentation for setup, architecture, workflows, search, limitations, and data model.
+Browser-readable canonical docs.
 
 ### `skills/`
-OpenClaw skills for chess coaching, scouting, study extraction, concept generation, database sync, and speedrun PGN extraction.
+Public chess skills.
 
 ### `chess_tools/`
-The reusable Python layer: PGN parsing, search/query logic, sync/update scripts, tagging helpers, diagram helpers, and document-generation utilities.
+Canonical reusable chess tooling.
 
 ### `examples/`
-Minimal sample inputs for understanding the workflow and testing the structure.
-
-### `scripts/`
-Thin repo-level helpers and notes.
+Minimal public sample layer.
 
 ---
 
-## What this repo is
+## Documentation rule
 
-This is not a polished chess product or a hosted service.
+Retained generic utilities should be documented, not silently copied in.
 
-It is a **working public toolkit** for people who want to replicate an OpenClaw-based chess coach locally, study how the pieces fit together, and adapt the approach to their own opening systems and game database.
+That includes small utilities such as:
+- `sanitize_pgn_comments.py`
 
-It is most useful if you are comfortable editing scripts, maintaining your own PGN corpus, and shaping the workflows around your own study goals.
+as well as the larger headline tools.
 
 ---
 
-## Quick starting point
+## Current direction
 
-If you only want the shortest path:
+The long-term direction for this project is:
+- generic public repo for code, skills, docs, and minimal examples
+- private companion repo for the real working data layer
+- markdown-first docs, PDF-second
 
-1. install the requirements
-2. read `docs/setup.md`
-3. inspect `examples/`
-4. run the search and parsing tools in `chess_tools/`
-5. adapt the source lists and skills to your own repertoire
-
-That is enough to understand the architecture and begin building your own version.
+This keeps the project readable in GitHub while still preserving the full operating data separately.

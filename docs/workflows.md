@@ -9,6 +9,5 @@
 - opening concept and cheat-sheet generation
 - chess.com speedrun PGN extraction for later study ingestion
 
-The repo gives you the workflow structure, the supporting tools, and a minimal example layer.
-
-For real use, replace the sample data with your own corpus and source lists.
+The public repo contains the generic workflows plus minimal examples.
+The private companion repo contains the full working data layer used for day-to-day operation.

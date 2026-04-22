@@ -4,11 +4,11 @@
 
 This public repo ships only a minimal sample layer.
 
-That means some workflows are easier to understand from the docs than to evaluate at scale until you plug in a larger corpus of your own.
+That means some workflows are easier to understand from the docs than to run at full scale without the private companion data repo.
 
-## You need your own data for full value
+## Private operating data is separate
 
-The included examples are enough to understand the design, but the strongest workflows depend on having a meaningful local database of games and sources.
+The full working corpus, complete source lists, and private generated outputs live in `chess-data-private`, not here.
 
 ## Example opening families
 

@@ -1,53 +1,49 @@
 ---
 name: chess-db-sync
-description: Sync a local chess PGN database with a maintained list of Lichess studies. Use when a user wants to refresh annotations, pull newly added chapters, or keep a study-backed corpus current.
+description: Sync the local chess game database (chess-db/games.pgn) with lichess studies. Triggers when user says "update the game database", "sync the database", "refresh games from lichess", "pull latest annotations", or similar. Covers all studies in chess-db/sources.txt (Stonewall, French, Habits, and any future additions). Compares by ChapterURL — detects new games and updated annotations. NOT for adding entirely new studies (that's a manual append to sources.txt).
 ---
 
 # Chess DB Sync
 
-Use this skill to refresh a local PGN corpus from Lichess studies.
+Sync `chess-db/games.pgn` with the latest from all lichess studies listed in `chess-db/sources.txt`.
 
-## What it does
+## Workflow
 
-- downloads fresh PGNs from the studies you track
-- compares games by `ChapterURL`
-- replaces games whose annotations changed
-- appends newly added games
-- keeps a local backup before writing
+1. Run the sync script:
+   ```bash
+   python3 chess-db/update_db.py
+   ```
+   To sync specific studies only:
+   ```bash
+   python3 chess-db/update_db.py STUDY_ID1 STUDY_ID2
+   ```
 
-## Basic workflow
+2. The script:
+   - Downloads fresh PGNs from lichess API for each study
+   - Compares each game by ChapterURL against the local database
+   - Replaces games with updated annotations
+   - Appends any new games
+   - Creates `games.pgn.bak` backup before writing
+   - Reports: new games, updated annotations, unchanged counts
 
-Run the sync script from the repo root:
+3. After sync, verify integrity:
+   ```bash
+   grep -c '^\[Event ' games.pgn
+   python3 parse_pgn.py games.pgn 2>&1 | tail -5
+   ```
 
-```bash
-python3 chess_tools/update_db.py
-```
+4. Report to user: total games updated, notable annotation changes (especially large +char diffs indicating significant new analysis).
 
-To sync only specific studies:
+## Adding New Studies
 
-```bash
-python3 chess_tools/update_db.py STUDY_ID1 STUDY_ID2
-```
-
-## Verification
-
-After syncing:
-
-1. check the reported counts for new / updated / unchanged games
-2. verify the resulting PGN still parses cleanly
-3. spot-check any large annotation changes
-
-## Source-list rule
-
-This skill assumes you maintain a source list for the studies you care about.
-
-When adding a new study:
-1. add the study ID to your maintained source list
-2. run the sync for that study
-3. include it in future full syncs
+When user wants to add a new lichess study to the database:
+1. Append the study ID to `chess-db/sources.txt`
+2. Run `python3 update_db.py <new_study_id>` to pull it in
+3. All future syncs will include the new study automatically
 
 ## Notes
 
-- the sync is designed for incremental upkeep, not one-off historical reconstruction
-- treat the synced PGN as generated local data
-- verify output before downstream analysis or PDF generation
+- Script rate-limits at 1 second between study downloads (lichess API courtesy)
+- Backup is always created before writes
+- Game order in the database is preserved
+- The script handles 13+ studies with 730+ games efficiently

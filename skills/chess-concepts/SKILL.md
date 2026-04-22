@@ -1,75 +1,137 @@
 ---
 name: chess-concepts
-description: Create and maintain concept documents around recurring chess ideas such as opposite-side castling, pawn storms, bishop pairs, or rook lifts. Use when the goal is to teach a concept with diagrams, examples, and opening-specific context.
+description: Create and maintain living-document PDFs exploring chess concepts (e.g. opposite-side castling, doubling rooks, pawn storms, bishop pair). Each concept is illustrated with chess position diagrams and explored within the context of the current opening systems in use (especially Stonewall and French Defense), using games from Aman Hambleton's speedruns (wonestall/sterkurstrakur), Ju Wenjun, self-account examples supplied at runtime, or scouted opponents. Triggers when user asks to "make a PDF on [concept]", "document [concept]", "chess concept: [topic]", or references updating an existing concept document. NOT for game analysis (use stonewall-coach) or opponent scouting (use chess-opponent-scout).
 ---
 
-# Chess Concepts
+# Chess Concepts — Living Documents
 
-Use this skill to build **concept documents** that explain a strategic idea through:
-- principles
-- diagrams
-- real game examples
-- opening-specific application
+Create beautiful, illustrated PDFs that teach chess concepts through the lens of the current opening systems in use.
 
-## Good use cases
+## Trigger
 
-- “make a PDF on opposite-side castling”
-- “document rook lifts”
-- “add examples to the pawn storm concept sheet”
+- "Make me a PDF on [concept]"
+- "Document [concept]"
+- "Chess concept: [topic]"
+- "Update the [concept] PDF"
+- "Add to the OSC document"
 
-## Document pattern
+## Existing Concepts
 
-Each concept document should usually contain:
+| Concept | File | Generator |
+|---------|------|-----------|
+| Opposite-Side Castling | `chess-db/concepts/opposite-side-castling.pdf` | `chess-db/concepts/generate_osc.py` |
 
-1. a short introduction
-2. a set of core principles or laws
-3. illustrative diagrams
-4. application inside relevant opening families
-5. real game examples
-6. a compact quick-reference summary
+When adding new concepts, update this table.
 
-## Source priority
+## Document Structure (Template)
 
-Use examples from:
-1. the local main corpus
-2. other public example collections supplied by the project
-3. explicitly supplied target-player games when relevant
+Every concept PDF follows this pattern:
 
-## Opening context
+### 1. Title & Intro
+- Bold concept name with emoji
+- Subtitle: "A Strategic Framework for [topic]"
+- Date + a neutral preparation line
+- 2-3 sentence intro framing why this concept matters
 
-When relevant, connect the concept to example opening families such as:
-- Stonewall
-- French
-- Habits
+### 2. The Laws / Principles (5-12 rules)
+Each principle gets:
+- **Numbered heading** (LAW I, LAW II, etc. — or PRINCIPLE, RULE, depending on tone)
+- **Key text** with bold highlights for critical phrases
+- **Chess diagram** illustrating the concept (using `diagram_helpers.py`)
+- **Caption** explaining the position
 
-These are examples, not hard limitations.
+### 3. Opening-Specific Application
+How the concept applies within the current systems in use:
+- **Stonewall context** — reference wonestall games (105W + 45B in `chess-db/games.pgn`)
+- **French context** — reference sterkurstrakur games (60 in `chess-db/games.pgn`)
+- **Cross-reference** with the Stonewall and French cheat sheet PDFs where relevant
 
-## Diagram workflow
+### 4. Real Game Examples
+Find illustrative games from:
+1. **Primary:** `chess-db/games.pgn` (Aman's speedruns — wonestall, sterkurstrakur, habitual)
+2. **Secondary:** Ju Wenjun games (`ju-wenjun/games.pgn`)
+3. **Tertiary:** self-account games only when explicitly supplied at runtime
+4. **Scouted opponents:** `opponents/*/games.pgn`
 
-Use the shared helpers in:
-- `chess_tools/diagram_helpers.py`
+Search method: Use `parse_pgn.py` or grep to find games exhibiting the concept. Include lichess/chess.com links.
 
-If you generate PDFs locally, keep the output workflow consistent and verify the diagrams actually illustrate the intended idea.
+### 5. Personal or Targeted Note
+Tailored advice connecting the concept to the target player's style, strengths, and weaknesses when such a target has been explicitly supplied at runtime.
 
-## Generator conventions
+### 6. Quick Reference Card
+Dark background summary box with all principles listed as bullet points.
 
-When maintaining generator scripts:
-- keep concept generators under a predictable path
-- keep outputs reproducible
-- pre-compute diagrams cleanly before assembling large HTML strings
+## Technical Implementation
 
-## Updating an existing concept
+### Diagram Infrastructure
+```python
+from diagram_helpers import diagram_html, DIAGRAM_CSS
+import chess, chess.svg
+```
 
-When revising a concept document:
-1. read the existing generator first
-2. understand the current structure
-3. add or revise examples deliberately
-4. regenerate locally
-5. verify the result before sharing it
+All diagrams use `chess-db/diagram_helpers.py`:
+- `diagram_html(fen, caption, arrows=None, size=240)` — returns HTML div
+- `DIAGRAM_CSS` — CSS to include in stylesheet
+- Arrows: `chess.svg.Arrow(from_sq, to_sq, color='#ff0000cc')`
 
-## Critical rules
+### PDF Generation
+- HTML + WeasyPrint (same as Stonewall/French PDFs)
+- A4 page size, 20mm margins
+- Color scheme: pick a distinct accent color per concept (avoid reusing SW blue or French green)
+  - OSC: dark red `#8b0000`
+  - Future concepts: pick from `#2c5282` (blue), `#6b21a8` (purple), `#065f46` (green), `#92400e` (amber)
 
-- use real games whenever practical
-- illustrate ideas with diagrams, not just prose
-- connect the concept to concrete opening play when that helps
-- keep the document focused on one strategic idea rather than mixing many themes
+### Generator Script Convention
+- File: `chess-db/concepts/generate_<concept_slug>.py`
+- Output: `chess-db/concepts/<concept-name>.pdf`
+- Pre-compute diagrams as variables before the f-string (no backslashes in f-strings)
+
+## Finding Illustrative Games
+
+When building a concept PDF, search for games that demonstrate the concept:
+
+```python
+# Example: find all OSC games in the Stonewall database
+from parse_pgn import load_games
+wg, bg = load_games('games.pgn', 'wonestall')
+for g in wg:
+    # Check if both sides castled and on different sides
+    w_castle = any(m == 'O-O' or m == 'O-O-O' for _, m in g['wm'])
+    b_castle = any(m == 'O-O' or m == 'O-O-O' for _, m in g['bm'])
+    # ... filter and classify
+```
+
+For each illustrative game, include:
+- Player names and ratings
+- Link to lichess study or chess.com game
+- Which move/position best demonstrates the concept
+- A diagram of that key moment
+
+## Updating Existing Concepts
+
+When Dash says "update the OSC document" or similar:
+1. Read the generator script first
+2. Understand current structure
+3. Make targeted additions (new examples, refined principles, etc.)
+4. Regenerate the PDF
+5. Send via message tool
+
+## Key Files
+
+| File | Purpose |
+|------|---------|
+| `chess-db/diagram_helpers.py` | Shared diagram rendering (SVG → base64 → HTML) |
+| `chess-db/concepts/` | All concept PDFs and their generators |
+| `chess-db/games.pgn` | Aman's speedrun games (primary source) |
+| `chess-db/parse_pgn.py` | PGN parser (MANDATORY) |
+| `chess-db/stonewall-cheatsheet.pdf` | Cross-reference for SW concepts |
+| `chess-db/french-cheatsheet.pdf` | Cross-reference for French concepts |
+
+## Critical Rules
+
+- **Always illustrate with diagrams** — no wall-of-text PDFs
+- **Always connect to the current opening systems in use** — Stonewall and French context mandatory when relevant
+- **Use real games** — not hypothetical positions (when possible)
+- **Living documents** — update when new insights emerge
+- **Pre-compute diagrams** — define as variables before the f-string to avoid backslash syntax errors
+- **Consistent style** — use `diagram_helpers.py` for all diagrams across all concept PDFs
