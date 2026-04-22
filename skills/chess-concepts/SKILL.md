@@ -1,6 +1,6 @@
 ---
 name: chess-concepts
-description: Create and maintain living documents exploring chess concepts (e.g. opposite-side castling, doubling rooks, pawn storms, bishop pair). Each concept is illustrated with chess position diagrams and explored within the context of the current opening systems in use (especially Stonewall and French Defense), using games from Aman Hambleton's speedruns (wonestall/sterkurstrakur), Ju Wenjun, self-account examples supplied at runtime, or scouted opponents. Triggers when user asks to "make a PDF on [concept]", "document [concept]", "chess concept: [topic]", or references updating an existing concept document. NOT for game analysis (use stonewall-coach) or opponent scouting (use chess-opponent-scout).
+description: "Create and maintain living documents exploring chess concepts (e.g. opposite-side castling, doubling rooks, pawn storms, bishop pair). Each concept is illustrated with chess position diagrams and explored within the context of the current opening systems in use (especially Stonewall and French Defense), using games from Aman Hambleton's speedruns (wonestall/sterkurstrakur), Ju Wenjun, self-account examples supplied at runtime, or scouted opponents. Triggers when user asks to 'make a PDF on [concept]', 'document [concept]', 'chess concept: [topic]', or references updating an existing concept document. NOT for game analysis (use stonewall-coach) or opponent scouting (use chess-opponent-scout)."
 ---
 
 # Chess Concepts — Living Documents
