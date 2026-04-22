@@ -1,0 +1,11 @@
+# Public sample sources for Version A
+# Aman / Chessbrah public Lichess study chapters used in games-sample.pgn
+
+https://lichess.org/study/TRXhfaYZ/DnAWDMiE
+https://lichess.org/study/TRXhfaYZ/VO4Qfhtu
+https://lichess.org/study/TRXhfaYZ/RNtltNGp
+https://lichess.org/study/TRXhfaYZ/sYH1q6JZ
+https://lichess.org/study/TRXhfaYZ/SzTZBlsn
+https://lichess.org/study/zOv1VXUQ/5gELUQzb
+https://lichess.org/study/zOv1VXUQ/HKmjRpqz
+https://lichess.org/study/nD4ZRU2M/9vOHjTsd

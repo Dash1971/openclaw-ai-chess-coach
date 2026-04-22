@@ -1,0 +1,5 @@
+# Python packages used by the staged scripts.
+# Some scripts also rely on external tools or system packages (for example `curl` and WeasyPrint dependencies).
+
+python-chess
+weasyprint
