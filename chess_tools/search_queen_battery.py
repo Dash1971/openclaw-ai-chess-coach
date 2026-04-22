@@ -90,8 +90,7 @@ def find_queen_battery_patterns(games):
     return results
 
 if __name__ == '__main__':
-    repo_root = Path(__file__).resolve().parent.parent
-    pgn_file = str(repo_root / 'examples' / 'sample_games.pgn')
+    pgn_file = str(Path(__file__).resolve().parent / 'games.pgn')
     
     print("Parsing PGN file...")
     games = parse_pgn_file(pgn_file)

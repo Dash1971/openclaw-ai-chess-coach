@@ -3,11 +3,9 @@ from pathlib import Path
 import markdown
 from weasyprint import HTML
 
-repo_root = Path(__file__).resolve().parent.parent
-base = repo_root
-md_path = repo_root / 'docs' / 'chess-search-guide.md'
-pdf_path = repo_root / 'generated' / 'chess-search-guide.pdf'
-pdf_path.parent.mkdir(parents=True, exist_ok=True)
+base = Path(__file__).resolve().parent
+md_path = base / 'chess-search-guide.md'
+pdf_path = base / 'chess-search-guide.pdf'
 text = md_path.read_text(encoding='utf-8')
 html_body = markdown.markdown(text, extensions=['fenced_code', 'tables'])
 html = f'''<!doctype html>
@@ -31,7 +29,7 @@ html = f'''<!doctype html>
 </style>
 </head>
 <body>
-<div class="meta">Generated from <code>docs/chess-search-guide.md</code></div>
+<div class="meta">Generated from <code>chess-search-guide.md</code></div>
 {html_body}
 </body>
 </html>'''

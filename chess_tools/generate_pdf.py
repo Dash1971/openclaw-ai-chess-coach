@@ -1097,8 +1097,7 @@ with open('/tmp/stonewall_cheatsheet.html', 'w') as f:
 
 # Generate PDF
 from pathlib import Path
-output_path = Path(__file__).resolve().parent.parent / 'generated' / 'stonewall-cheatsheet.pdf'
-output_path.parent.mkdir(parents=True, exist_ok=True)
+output_path = Path(__file__).resolve().parent / 'stonewall-cheatsheet.pdf'
 weasyprint.HTML(string=html).write_pdf(str(output_path))
 print(f'PDF generated: {output_path}')
 print(f'  {n_white} white + {n_black} black games')

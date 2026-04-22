@@ -461,8 +461,7 @@ move that isn't directly advancing your storm or addressing their threats is a w
 
 # Generate PDF
 from pathlib import Path
-out_path = Path(__file__).resolve().parents[2] / 'generated' / 'iron-laws-osc.pdf'
-out_path.parent.mkdir(parents=True, exist_ok=True)
+out_path = Path(__file__).resolve().parents[1] / 'iron-laws-osc.pdf'
 weasyprint.HTML(string=html).write_pdf(str(out_path))
 print(f'Generated {out_path}')
 

@@ -944,8 +944,7 @@ with open('/tmp/french_cheatsheet.html', 'w') as f:
 
 # Generate PDF
 from pathlib import Path
-output_path = Path(__file__).resolve().parent.parent / 'generated' / 'french-cheatsheet.pdf'
-output_path.parent.mkdir(parents=True, exist_ok=True)
+output_path = Path(__file__).resolve().parent / 'french-cheatsheet.pdf'
 weasyprint.HTML(string=html).write_pdf(str(output_path))
 print(f'PDF generated: {output_path}')
 print(f'  {n_games} games')

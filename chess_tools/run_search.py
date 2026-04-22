@@ -4,8 +4,7 @@ import json
 from pathlib import Path
 
 BASE = Path(__file__).resolve().parent
-REPO_ROOT = BASE.parent
-DEFAULT_PGN = REPO_ROOT / 'examples' / 'sample_games.pgn'
+DEFAULT_PGN = BASE / 'games.pgn'
 sys.path.insert(0, str(BASE))
 
 from query_engine import run_query, QueryError
