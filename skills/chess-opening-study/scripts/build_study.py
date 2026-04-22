@@ -23,8 +23,9 @@ import sys
 import json
 import argparse
 from collections import Counter
+from pathlib import Path
 
-WORKSPACE = os.path.expanduser('<workspace>')
+REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -724,8 +725,8 @@ def main():
     pgn_path = args.pgn_path
     if not pgn_path:
         candidates = [
-            os.path.join(WORKSPACE, 'opponents', username, 'games.pgn'),
-            os.path.join(WORKSPACE, username, 'games.pgn'),
+            str(REPO_ROOT / 'opponents' / username / 'games.pgn'),
+            str(REPO_ROOT / username / 'games.pgn'),
         ]
         for c in candidates:
             if os.path.exists(c):
@@ -849,9 +850,9 @@ def main():
         print(f"[{i+1:2d}] {chapter_title[:60]:60s} | {game['total_moves']:3d}m | {ann_count} ann")
 
     # Write output
-    out_dir = os.path.join(WORKSPACE, 'opponents', username)
-    os.makedirs(out_dir, exist_ok=True)
-    out_path = os.path.join(out_dir, f'{username}-{opening}-study.pgn')
+    out_dir = REPO_ROOT / 'opponents' / username
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_path = out_dir / f'{username}-{opening}-study.pgn'
 
     with open(out_path, 'w') as f:
         f.write('\n\n'.join(study_games) + '\n')
