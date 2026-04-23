@@ -51,13 +51,14 @@ python3 chess_tools/generate_opening_guide.py french --input /tmp/french.json --
 
 ## Typical study flow
 
-The usual operating sequence is:
+A practical operating sequence is:
 
-1. pull games from a public account or archive
-2. import them into Lichess studies
+1. download speedrun or other public game data
+2. import those games into Lichess studies
 3. annotate and organize them in Lichess
-4. add the study URLs to a source list
-5. sync the studies into a local PGN corpus
-6. run search, coaching, or document-generation workflows against that local corpus
+4. sync the study URLs into a local PGN corpus
+5. generate an opening cheat sheet from that annotated corpus with the generic opening-guide pipeline
+6. use the openings-coach workflow to critique your own games against the standard set by that cheat sheet
+7. scout opponents in advance to estimate how well your preparation is likely to work
 
 This repo ships the generic tooling and a minimal example layer.

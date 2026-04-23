@@ -28,18 +28,24 @@ Useful links:
 
 ---
 
-## How the source-material pipeline works
+## Typical workflow
 
-A typical workflow looks like this:
+A practical end-to-end workflow looks like this:
 
-1. pull games from a public source such as a chess.com speedrun account
-2. import those games into one or more Lichess studies
-3. annotate and organize the games in Lichess
-4. collect the study URLs into a source list
-5. sync those studies into a local PGN database
-6. run search, coaching, scouting, and document-generation workflows against that local corpus
+1. download speedrun or other public game data
+2. import those games into one or more Lichess studies and annotate them there
+3. sync the annotated study URLs into a local PGN database and run the opening-guide builder to generate a cheat-sheet document from the annotated corpus
+4. use the openings-coach workflow to critique your own games against the standard established by the relevant cheat sheet
+5. scout opponents in advance to judge how well your opening preparation is likely to work
 
-You do not have to use this exact pipeline, but it is the main workflow this repo demonstrates.
+The generic opening-guide interface in this repo is:
+
+```bash
+python3 chess_tools/tag_opening.py <opening> --db <games.pgn> --output /tmp/<opening>.json
+python3 chess_tools/generate_opening_guide.py <opening> --input /tmp/<opening>.json --output <opening>-cheatsheet.pdf
+```
+
+The current configured openings are `stonewall` and `french`, but the architecture is now set up to extend beyond those opening families.
 
 ---
 
@@ -61,7 +67,7 @@ The `chess_tools/` layer contains the reusable code behind the workflows, includ
 - tagging helpers
 - diagram helpers
 - PGN comment sanitation helpers
-- document/export generators
+- generic opening-guide / cheat-sheet builder plus export helpers
 
 ### Docs
 The `docs/` tree explains the architecture, setup, workflows, and search system.
