@@ -1,6 +1,6 @@
 # Architecture
 
-OpenClaw AI Chess Coach is organized into four main layers:
+AI Chess Assistant is organized into four main layers:
 
 ## 1. Skills
 

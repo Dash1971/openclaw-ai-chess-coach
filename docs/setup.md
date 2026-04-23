@@ -1,6 +1,6 @@
 # Setup
 
-This repo is the public, generic OpenClaw chess-coach layer.
+This repo is the public, generic OpenClaw chess-assistant layer.
 
 If you are new to OpenClaw itself, start here:
 - docs: <https://docs.openclaw.ai>

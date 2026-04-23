@@ -1,6 +1,6 @@
-# OpenClaw AI Chess Coach
+# AI Chess Assistant
 
-OpenClaw AI Chess Coach is a generic OpenClaw-based chess study stack for building your own local chess coach around reusable skills, reusable tooling, and a small example layer.
+AI Chess Assistant is a generic OpenClaw-based chess study stack for building your own local chess assistant around reusable skills, reusable tooling, and a small example layer.
 
 It is designed to support workflows such as:
 - syncing annotated Lichess studies into a local PGN corpus
