@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
-"""Generate Stonewall Cheat Sheet PDF from wonestall game collection.
+"""Generate Stonewall Cheat Sheet PDF from tagged game data.
 
-Prerequisites: Run tag_games.py first to generate /tmp/sw_data.json
-Usage: python3 generate_pdf.py
+Prerequisites: Run tag_games.py (or tag_opening.py stonewall) first to
+produce the JSON input (default: /tmp/sw_data.json).
+
+Usage:
+    python3 generate_pdf.py
+    OPENING_GUIDE_INPUT=/path/to/data.json OPENING_GUIDE_OUTPUT=out.pdf python3 generate_pdf.py
+
 
 ANTI-REGRESSION RULES:
 - Do not hardcode living-corpus percentages in prose. If the DB changes, compute both counts and percentages from current data.

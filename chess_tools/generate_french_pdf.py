@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
-"""Generate French Defense Cheat Sheet PDF from sterkurstrakur game collection.
+"""Generate French Defense Cheat Sheet PDF from tagged game data.
 
-Prerequisites: Run tag_french.py first to generate /tmp/french_data.json
-Usage: python3 generate_french_pdf.py
+Prerequisites: Run tag_french.py (or tag_opening.py french) first to
+produce the JSON input (default: /tmp/french_data.json).
+
+Usage:
+    python3 generate_french_pdf.py
+    OPENING_GUIDE_INPUT=/path/to/data.json OPENING_GUIDE_OUTPUT=out.pdf python3 generate_french_pdf.py
 """
 
 import json

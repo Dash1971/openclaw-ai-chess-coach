@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """
-Tag sterkurstrakur French Defense games with thematic categories.
-Outputs /tmp/french_data.json for generate_french_pdf.py consumption.
+Tag French Defense games with thematic categories.
+
+Input PGN is read from --db / OPENING_PGN_PATH (default: games.pgn in cwd).
+Output JSON defaults to /tmp/french_data.json; override with --output or
+OPENING_TAG_OUTPUT.  Pass the output path to generate_french_pdf.py (via
+OPENING_GUIDE_INPUT) to build the cheat-sheet PDF.
 
 IMPORTANT: Thematic tags are based on the OPENING PHASE (first 15 moves)
 to avoid false positives from random middlegame/endgame moves.

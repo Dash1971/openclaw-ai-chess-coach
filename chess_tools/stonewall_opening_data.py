@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
-"""Stonewall opening-specific defaults and metadata."""
+"""Stonewall opening-specific defaults and metadata.
+
+Path defaults are intentionally cwd-relative (or /tmp for scratch files) so
+that the public repo does not assume a built-in corpus or write derived files
+into the source tree.  Supply explicit paths via CLI flags or environment
+variables (OPENING_PGN_PATH, OPENING_TAG_OUTPUT, OPENING_GUIDE_OUTPUT).
+"""
 
 from __future__ import annotations
 
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent
-DEFAULT_PGN = BASE_DIR / 'games.pgn'
+DEFAULT_PGN = Path('games.pgn')           # resolved against cwd at runtime
 DEFAULT_TAG_OUTPUT = Path('/tmp/sw_data.json')
 DEFAULT_GUIDE_HTML = Path('/tmp/stonewall_cheatsheet.html')
-DEFAULT_GUIDE_PDF = BASE_DIR / 'stonewall-cheatsheet.pdf'
+DEFAULT_GUIDE_PDF = Path('stonewall-cheatsheet.pdf')  # resolved against cwd
 MOVE_CUTOFF = 15
 
 WHITE_ATTACK_THEMES = [
