@@ -1,13 +1,28 @@
 #!/usr/bin/env python3
+"""Run a few canned structured-query examples against a user-supplied PGN corpus."""
+
+import argparse
 import sys
-import json
 from pathlib import Path
 
 BASE = Path(__file__).resolve().parent
-DEFAULT_PGN = BASE / 'games.pgn'
+DEFAULT_PGN = Path('games.pgn')
 sys.path.insert(0, str(BASE))
 
-from query_engine import run_query, QueryError
+try:
+    from query_engine import run_query, QueryError
+    _QUERY_IMPORT_ERROR = None
+except ModuleNotFoundError as e:
+    run_query = None
+    QueryError = ValueError
+    _QUERY_IMPORT_ERROR = e
+
+
+def require_query_runtime() -> None:
+    if _QUERY_IMPORT_ERROR is not None:
+        raise SystemExit(
+            "python-chess is required for the structured query tools. Install dependencies first: pip install -r requirements.txt"
+        )
 
 # Query 1: Rook lift -> Queen-Rook battery -> checkmate
 query1 = {
@@ -47,20 +62,6 @@ query1 = {
     ]
 }
 
-print("=" * 60)
-print("QUERY 1: Rook lift -> Q-R battery -> checkmate")
-print("=" * 60)
-
-try:
-    result1 = run_query(query1, path=str(DEFAULT_PGN))
-    print(f"Scanned games: {result1['scanned_games']}, Matches: {result1['returned']}")
-    for r in result1['results']:
-        print(f"\n{result1['results'].index(r)+1}. {r['study']} - {r['chapter']}")
-        print(f"   URL: {r['url']}")
-        print(f"   Moves: {' -> '.join([m['san'] for m in r['matched_moves']])}")
-        print(f"   Why: {r['reasons']}")
-except QueryError as e:
-    print(f"Error: {e}")
 
 # Query 2: Simpler - just Q-R battery on h-file
 query2 = {
@@ -88,20 +89,6 @@ query2 = {
     ]
 }
 
-print("\n" + "=" * 60)
-print("QUERY 2: Q-R battery (anywhere) -> checkmate")
-print("=" * 60)
-
-try:
-    result2 = run_query(query2, path=str(DEFAULT_PGN))
-    print(f"Scanned games: {result2['scanned_games']}, Matches: {result2['returned']}")
-    for r in result2['results']:
-        print(f"\n{result2['results'].index(r)+1}. {r['study']} - {r['chapter']}")
-        print(f"   URL: {r['url']}")
-        print(f"   Moves: {' -> '.join([m['san'] for m in r['matched_moves']])}")
-        print(f"   Why: {r['reasons']}")
-except QueryError as e:
-    print(f"Error: {e}")
 
 # Query 3: Rook lift followed by heavy pieces bringing mate
 query3 = {
@@ -128,17 +115,62 @@ query3 = {
     ]
 }
 
-print("\n" + "=" * 60)
-print("QUERY 3: Rook lift -> checkmate (within 8 moves)")
-print("=" * 60)
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description='Run canned structured-query examples against a PGN corpus.')
+    parser.add_argument('--db', default=str(DEFAULT_PGN), help='Path to the PGN corpus (default: ./games.pgn)')
+    return parser
 
-try:
-    result3 = run_query(query3, path=str(DEFAULT_PGN))
-    print(f"Scanned games: {result3['scanned_games']}, Matches: {result3['returned']}")
-    for r in result3['results']:
-        print(f"\n{result3['results'].index(r)+1}. {r['study']} - {r['chapter']}")
-        print(f"   URL: {r['url']}")
-        print(f"   Moves: {' -> '.join([m['san'] for m in r['matched_moves']])}")
-        print(f"   Why: {r['reasons']}")
-except QueryError as e:
-    print(f"Error: {e}")
+
+def main(argv=None):
+    args = build_parser().parse_args(argv)
+    db_path = args.db
+    require_query_runtime()
+
+    print("=" * 60)
+    print("QUERY 1: Rook lift -> Q-R battery -> checkmate")
+    print("=" * 60)
+
+    try:
+        result1 = run_query(query1, path=str(db_path))
+        print(f"Scanned games: {result1['scanned_games']}, Matches: {result1['returned']}")
+        for r in result1['results']:
+            print(f"\n{result1['results'].index(r)+1}. {r['study']} - {r['chapter']}")
+            print(f"   URL: {r['url']}")
+            print(f"   Moves: {' -> '.join([m['san'] for m in r['matched_moves']])}")
+            print(f"   Why: {r['reasons']}")
+    except QueryError as e:
+        print(f"Error: {e}")
+
+    print("\n" + "=" * 60)
+    print("QUERY 2: Q-R battery (anywhere) -> checkmate")
+    print("=" * 60)
+
+    try:
+        result2 = run_query(query2, path=str(db_path))
+        print(f"Scanned games: {result2['scanned_games']}, Matches: {result2['returned']}")
+        for r in result2['results']:
+            print(f"\n{result2['results'].index(r)+1}. {r['study']} - {r['chapter']}")
+            print(f"   URL: {r['url']}")
+            print(f"   Moves: {' -> '.join([m['san'] for m in r['matched_moves']])}")
+            print(f"   Why: {r['reasons']}")
+    except QueryError as e:
+        print(f"Error: {e}")
+
+    print("\n" + "=" * 60)
+    print("QUERY 3: Rook lift -> checkmate (within 8 moves)")
+    print("=" * 60)
+
+    try:
+        result3 = run_query(query3, path=str(db_path))
+        print(f"Scanned games: {result3['scanned_games']}, Matches: {result3['returned']}")
+        for r in result3['results']:
+            print(f"\n{result3['results'].index(r)+1}. {r['study']} - {r['chapter']}")
+            print(f"   URL: {r['url']}")
+            print(f"   Moves: {' -> '.join([m['san'] for m in r['matched_moves']])}")
+            print(f"   Why: {r['reasons']}")
+    except QueryError as e:
+        print(f"Error: {e}")
+
+
+if __name__ == '__main__':
+    main()

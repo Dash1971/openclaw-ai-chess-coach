@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
-"""
-Search for Aman's games with Qc2 (White) and Qc7 (Black) prophylactic moves
-protecting bishops in battery setups.
-"""
+"""Search a PGN corpus for Qc2/Qc7 bishop-battery setups."""
 
+import argparse
 import re
 from pathlib import Path
 
@@ -89,9 +87,16 @@ def find_queen_battery_patterns(games):
     
     return results
 
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description='Search a PGN corpus for Qc2/Qc7 bishop-battery setups.')
+    parser.add_argument('--db', default='games.pgn', help='Path to the PGN corpus (default: ./games.pgn)')
+    return parser
+
+
 if __name__ == '__main__':
-    pgn_file = str(Path(__file__).resolve().parent / 'games.pgn')
-    
+    args = build_parser().parse_args()
+    pgn_file = args.db
+
     print("Parsing PGN file...")
     games = parse_pgn_file(pgn_file)
     print(f"Found {len(games)} games")

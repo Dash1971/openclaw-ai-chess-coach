@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Assistant-facing wrapper for chess-db queries.
+"""Assistant-facing wrapper for structured chess queries.
 
 Takes a natural-language chess question and returns a compact human-readable answer
 instead of raw JSON. Built for chat usage and fast manual invocation.
@@ -10,9 +10,19 @@ from __future__ import annotations
 import argparse
 import io
 from contextlib import redirect_stdout
+from pathlib import Path
 
-from query_engine import DB_PATH, QueryError, run_query
-from query_fuzzy import run_fuzzy_query
+try:
+    from query_engine import DB_PATH, QueryError, run_query
+    from query_fuzzy import run_fuzzy_query
+    _QUERY_IMPORT_ERROR = None
+except ModuleNotFoundError as e:
+    DB_PATH = Path("games.pgn")
+    QueryError = ValueError
+    run_query = None
+    run_fuzzy_query = None
+    _QUERY_IMPORT_ERROR = e
+
 from query_nl import (
     build_exact_query,
     build_fuzzy_query,
@@ -20,6 +30,13 @@ from query_nl import (
     normalize_space,
     parse_prompt,
 )
+
+
+def require_query_runtime() -> None:
+    if _QUERY_IMPORT_ERROR is not None:
+        raise SystemExit(
+            "python-chess is required for the structured query tools. Install dependencies first: pip install -r requirements.txt"
+        )
 
 
 def format_match(item: dict, idx: int) -> str:
@@ -105,6 +122,7 @@ def summarize(payload: dict, top_n: int = 5) -> str:
 
 
 def run_nl_query(text: str, db: str, mode: str, player: str | None, color: str | None, limit: int, context_window: int) -> dict:
+    require_query_runtime()
     forced_mode = None if mode == "auto" else mode
     parsed = parse_prompt(text, mode=forced_mode, player=player, color=color)
 
@@ -137,9 +155,9 @@ def run_nl_query(text: str, db: str, mode: str, player: str | None, color: str |
 
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(description="Assistant-facing natural-language chess-db search")
+    p = argparse.ArgumentParser(description="Assistant-facing natural-language chess search")
     p.add_argument("text", nargs="*", help="Natural-language chess question")
-    p.add_argument("--db", default=DB_PATH, help="Path to PGN database")
+    p.add_argument("--db", default=str(DB_PATH), help="Path to the PGN corpus (default: ./games.pgn)")
     p.add_argument("--mode", choices=["auto", "exact", "fuzzy"], default="auto")
     p.add_argument("--player", help="Force player")
     p.add_argument("--color", choices=["white", "black"], help="Force color")

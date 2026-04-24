@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""CLI wrapper for the chess-db structured query engine."""
+"""CLI wrapper for the structured chess query engine."""
 
 from __future__ import annotations
 
@@ -7,14 +7,32 @@ import argparse
 import json
 import os
 import sys
+from pathlib import Path
 
-from query_engine import DB_PATH, QueryError, load_query, run_query
-from query_fuzzy import compile_fuzzy_to_exact, run_fuzzy_query
+try:
+    from query_engine import DB_PATH, QueryError, load_query, run_query
+    from query_fuzzy import compile_fuzzy_to_exact, run_fuzzy_query
+    _QUERY_IMPORT_ERROR = None
+except ModuleNotFoundError as e:
+    DB_PATH = Path("games.pgn")
+    QueryError = ValueError
+    load_query = None
+    run_query = None
+    compile_fuzzy_to_exact = None
+    run_fuzzy_query = None
+    _QUERY_IMPORT_ERROR = e
+
+
+def require_query_runtime() -> None:
+    if _QUERY_IMPORT_ERROR is not None:
+        raise SystemExit(
+            "python-chess is required for the structured query tools. Install dependencies first: pip install -r requirements.txt"
+        )
 
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(description="Structured motif/position search for chess-db")
-    p.add_argument("--db", default=DB_PATH, help="Path to PGN database")
+    p = argparse.ArgumentParser(description="Structured motif/position search over a PGN corpus")
+    p.add_argument("--db", default=str(DB_PATH), help="Path to the PGN corpus (default: ./games.pgn)")
     p.add_argument("--query-file", help="Path to exact JSON query file")
     p.add_argument("--query-json", help="Inline exact JSON query")
     p.add_argument("--fuzzy-file", help="Path to fuzzy JSON query file")
@@ -61,6 +79,7 @@ def pretty_print(payload: dict) -> None:
 def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
+    require_query_runtime()
     try:
         has_exact = bool(args.query_file or args.query_json)
         has_fuzzy = bool(args.fuzzy_file or args.fuzzy_json)

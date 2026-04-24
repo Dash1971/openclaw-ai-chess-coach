@@ -4,10 +4,9 @@
 from __future__ import annotations
 
 import argparse
-import os
 from pathlib import Path
 
-DEFAULT_DB_PATH = Path(__file__).resolve().with_name("games.pgn")
+DEFAULT_DB_PATH = Path("games.pgn")
 
 
 def normalize_san(move: str) -> str:
@@ -71,7 +70,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--db",
         default=str(DEFAULT_DB_PATH),
-        help="Path to the PGN corpus (defaults to chess_tools/games.pgn if present)",
+        help="Path to the PGN corpus (default: ./games.pgn)",
     )
     return parser
 

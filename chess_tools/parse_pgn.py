@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Proper PGN parser for chess-db.
+r"""Proper PGN parser for arbitrary user-supplied corpora.
 
 DO NOT use simple regex like re.findall(r'(\d+)\.\s*(\S+)\s+(\S+)', text)
 for PGN parsing — it fails on annotations, variations, and continuations,
@@ -11,6 +10,7 @@ Usage:
     white_games, black_games = load_games('games.pgn', player='wonestall')
 """
 
+import argparse
 import re
 from pathlib import Path
 
@@ -108,9 +108,14 @@ def load_games(pgn_path, player=None):
     return white_games, black_games
 
 
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description='Parse a PGN corpus with the proper non-regex parser.')
+    parser.add_argument('pgn', nargs='?', default='games.pgn', help='Path to the PGN corpus (default: ./games.pgn)')
+    parser.add_argument('--player', default='wonestall', help='Optional player filter (default: wonestall)')
+    return parser
+
+
 if __name__ == '__main__':
-    import sys
-    pgn = sys.argv[1] if len(sys.argv) > 1 else 'games.pgn'
-    player = sys.argv[2] if len(sys.argv) > 2 else 'wonestall'
-    wg, bg = load_games(pgn, player)
-    print(f'Loaded {len(wg)} white + {len(bg)} black games for {player}')
+    args = build_parser().parse_args()
+    wg, bg = load_games(args.pgn, args.player)
+    print(f'Loaded {len(wg)} white + {len(bg)} black games for {args.player}')

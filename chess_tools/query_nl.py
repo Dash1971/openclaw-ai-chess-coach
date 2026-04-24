@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Natural-language wrapper for chess-db structured queries.
+"""Natural-language wrapper for structured chess queries.
 
 Rule-first approach:
 - detect whether the user wants exact vs fuzzy search
@@ -15,14 +15,29 @@ import json
 import re
 import sys
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 HEAVY_PIECE_REGEX = r"(?:Q|R)[a-h1-8x]*[a-h][1-8][+#]?"
 ANY_ATTACKING_FOLLOWUP_REGEX = r"(?:Q|R)[a-h1-8x]*[a-h][1-8][+#]?|[KQRBN]?[a-h]?[1-8]?x?[a-h][1-8][+#]?"
 
-from query_engine import DB_PATH, QueryError
-from query_fuzzy import run_fuzzy_query
-from query_engine import run_query
+try:
+    from query_engine import DB_PATH, QueryError, run_query
+    from query_fuzzy import run_fuzzy_query
+    _QUERY_IMPORT_ERROR = None
+except ModuleNotFoundError as e:
+    DB_PATH = Path("games.pgn")
+    QueryError = ValueError
+    run_query = None
+    run_fuzzy_query = None
+    _QUERY_IMPORT_ERROR = e
+
+
+def require_query_runtime() -> None:
+    if _QUERY_IMPORT_ERROR is not None:
+        raise SystemExit(
+            "python-chess is required for the structured query tools. Install dependencies first: pip install -r requirements.txt"
+        )
 
 PIECE_WORDS = {
     "pawn": "P",
@@ -900,9 +915,9 @@ def explain_parse(parsed: ParsedPrompt) -> dict[str, Any]:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(description="Natural-language wrapper for chess-db structured query search")
+    p = argparse.ArgumentParser(description="Natural-language wrapper for structured chess query search")
     p.add_argument("text", nargs="*", help="Natural-language chess query")
-    p.add_argument("--db", default=DB_PATH, help="Path to PGN database")
+    p.add_argument("--db", default=str(DB_PATH), help="Path to the PGN corpus (default: ./games.pgn)")
     p.add_argument("--mode", choices=["auto", "exact", "fuzzy"], default="auto")
     p.add_argument("--player", help="Force player name")
     p.add_argument("--color", choices=["white", "black"], help="Force color")

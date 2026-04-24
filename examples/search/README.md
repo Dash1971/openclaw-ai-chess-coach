@@ -1,6 +1,6 @@
 # Search Examples
 
-This directory preserves reusable query examples, prompt examples, and JSON fixtures that were previously parked in the retired `openclaw-chess-tools-private` repo.
+This directory preserves reusable query examples, prompt examples, and JSON fixtures that were carried forward from an earlier staging repo.
 
 They are public-safe supporting assets for the `chess_tools/` search stack.
 

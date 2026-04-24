@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Procedural backup wrapper for chess-db queries.
+"""Procedural backup wrapper for structured chess queries.
 
 Purpose:
 - reduce model discretion for backup models like Kimi
@@ -16,9 +16,23 @@ from pathlib import Path
 from typing import Any
 
 from query_answer import run_nl_query, summarize
-from query_engine import run_query
-from query_fuzzy import run_fuzzy_query
 from query_nl import normalize_space, parse_prompt
+
+try:
+    from query_engine import run_query
+    from query_fuzzy import run_fuzzy_query
+    _QUERY_IMPORT_ERROR = None
+except ModuleNotFoundError as e:
+    run_query = None
+    run_fuzzy_query = None
+    _QUERY_IMPORT_ERROR = e
+
+
+def require_query_runtime() -> None:
+    if _QUERY_IMPORT_ERROR is not None:
+        raise SystemExit(
+            "python-chess is required for the structured query tools. Install dependencies first: pip install -r requirements.txt"
+        )
 
 
 def best_link(payload: dict[str, Any]) -> str | None:
@@ -195,6 +209,7 @@ def run_attack_shape_fallback(text: str, db: str, limit: int, context_window: in
 
 
 def procedural_search(text: str, db: str, limit: int, context_window: int) -> dict[str, Any]:
+    require_query_runtime()
     normalized_text, rules_applied = normalize_backup_text(text)
 
     attack_shape = run_attack_shape_fallback(normalized_text, db=db, limit=limit, context_window=context_window)
@@ -285,9 +300,9 @@ def render_backup_answer(payload: dict[str, Any], top_n: int) -> str:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(description="Procedural backup wrapper for chess-db queries")
+    p = argparse.ArgumentParser(description="Procedural backup wrapper for structured chess queries")
     p.add_argument("text", nargs="*", help="Natural-language chess question")
-    p.add_argument("--db", default=str(Path(__file__).resolve().parent / "games.pgn"))
+    p.add_argument("--db", default="games.pgn", help="Path to the PGN corpus (default: ./games.pgn)")
     p.add_argument("--limit", type=int, default=5)
     p.add_argument("--context-window", type=int, default=2)
     p.add_argument("--json", action="store_true", help="Also print raw JSON payload")

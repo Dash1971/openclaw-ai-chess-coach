@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""General position/motif query engine for chess-db.
+"""General position/motif query engine for structured chess search.
 
 Purpose:
 - do deterministic retrieval over PGN data
@@ -14,15 +14,15 @@ from __future__ import annotations
 import contextlib
 import io
 import json
-import os
 import re
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Iterable
 
 import chess
 import chess.pgn
 
-DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "games.pgn")
+DB_PATH = Path("games.pgn")
 
 RESULTS_DEFAULT = 10
 WINDOW_DEFAULT = 3
@@ -147,7 +147,7 @@ def game_focus_color(headers: dict[str, str], query: dict[str, Any]) -> chess.Co
     return None
 
 
-def iter_game_contexts(path: str = DB_PATH) -> Iterable[tuple[int, dict[str, str], list[MoveContext]]]:
+def iter_game_contexts(path: str = str(DB_PATH)) -> Iterable[tuple[int, dict[str, str], list[MoveContext]]]:
     with open(path, encoding="utf-8", errors="ignore") as f:
         game_id = 0
         while True:

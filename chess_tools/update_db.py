@@ -14,9 +14,8 @@ import subprocess
 import time
 from pathlib import Path
 
-SCRIPT_DIR = Path(__file__).resolve().parent
-DEFAULT_GAMES_PGN = SCRIPT_DIR / "games.pgn"
-DEFAULT_SOURCES_TXT = SCRIPT_DIR / "sources.txt"
+DEFAULT_GAMES_PGN = Path("games.pgn")
+DEFAULT_SOURCES_TXT = Path("sources.txt")
 
 
 def parse_pgn_to_games(text):
@@ -93,12 +92,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--db",
         default=str(DEFAULT_GAMES_PGN),
-        help="Path to the target PGN database (defaults to chess_tools/games.pgn if present)",
+        help="Path to the target PGN database (default: ./games.pgn)",
     )
     parser.add_argument(
         "--sources",
         default=str(DEFAULT_SOURCES_TXT),
-        help="Path to a text file containing one Lichess study id per line",
+        help="Path to a text file containing one Lichess study id per line (default: ./sources.txt)",
     )
     return parser
 
