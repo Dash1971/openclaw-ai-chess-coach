@@ -168,10 +168,10 @@ Record in `memory/YYYY-MM-DD.md`:
 |------|---------|
 | `skills/chess-opening-study/scripts/build_study.py` | Main extraction + annotation script |
 | `skills/chess-opponent-scout/scripts/analyze_player.py` | Game downloader (reused) |
-| `chess-db/parse_pgn.py` | PGN parser (MANDATORY) |
-| `chess-db/games.pgn` | Aman's reference database |
-| `chess-db/stonewall-cheatsheet.pdf` | SW reference |
-| `chess-db/french-cheatsheet.pdf` | French reference |
+| `chess_tools/parse_pgn.py` | PGN parser (MANDATORY) |
+| local reference corpus (typically `chess-data-private/corpora/games.pgn`) | Aman/public reference database used for comparison |
+| `chess-data-private/generated/stonewall-cheatsheet.pdf` | Optional Stonewall reference in this repo family |
+| `chess-data-private/generated/french-cheatsheet.pdf` | Optional French reference in this repo family |
 
 ## Critical Rules
 

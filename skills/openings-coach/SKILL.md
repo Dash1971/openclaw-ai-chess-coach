@@ -1,6 +1,6 @@
 ---
 name: openings-coach
-description: Analyze chess games against Aman Hambleton's speedrun databases (Stonewall and French Defense). Triggers when user sends a PGN file or chess game for analysis, asks about Stonewall or French opening strategy, references "our SW doc/cheat sheet" or "French doc/cheat sheet", or requests updates to either living document. Also triggers on questions about wonestall/sterkurstrakur/Aman's speedrun patterns. NOT for general chess questions unrelated to these openings, or for the chess-db move prefix search (that's a separate trigger).
+description: Analyze chess games against Aman Hambleton's speedrun databases (Stonewall and French Defense). Triggers when user sends a PGN file or chess game for analysis, asks about Stonewall or French opening strategy, references "our SW doc/cheat sheet" or "French doc/cheat sheet", or requests updates to either living document. Also triggers on questions about wonestall/sterkurstrakur/Aman's speedrun patterns. NOT for general chess questions unrelated to these openings, or for the general `chess_tools` search stack.
 ---
 
 # Opening Coach (Stonewall + French)
@@ -9,13 +9,13 @@ description: Analyze chess games against Aman Hambleton's speedrun databases (St
 
 When Dash sends a PGN file, detect the opening BEFORE analyzing:
 
-1. Parse with `chess-db/parse_pgn.py` (NEVER one-line regex)
+1. Parse with `chess_tools/parse_pgn.py` (NEVER one-line regex)
 2. Classify the opening:
 
 **Stonewall Detection (White or Black):**
 - White SW: d4 + e3 + f4 + Bd3 structure (any order)
 - Black SW: d5 + e6 + f5 + Bd6 structure (typically vs 1.d4)
-- Reference player: **wonestall** | DB: current local Stonewall corpus in `chess-db/games.pgn`
+- Reference player: **wonestall** | DB: current local corpus (for this repo family, typically `chess-data-private/corpora/games.pgn`)
 - Before Stonewall-specific analysis or cheat-sheet maintenance, read `skills/openings-coach/references/stonewall-notes.md`
 
 **French Defense Detection:**
@@ -32,17 +32,11 @@ When Dash sends a PGN file, detect the opening BEFORE analyzing:
 ## Mode 1: Game Analysis (PGN received)
 
 ### Step 1: Parse & Detect
-```bash
-cd chess-db
-python3 -c "
-from parse_pgn import load_games
-# Load both reference databases
-sw_white, sw_black = load_games('games.pgn', 'wonestall')
-_, french_games = load_games('games.pgn', 'sterkurstrakur')
-print(f'Stonewall: {len(sw_white)} White, {len(sw_black)} Black')
-print(f'French: {len(french_games)} games')
-"
-```
+Use `chess_tools/parse_pgn.py` against:
+- the incoming PGN
+- your local reference corpus (for this repo family, typically `chess-data-private/corpora/games.pgn`)
+
+The key rule is unchanged: proper PGN parsing first, opening classification second.
 
 ### Step 2: Analyze by Opening
 
@@ -157,15 +151,17 @@ End with "**Single biggest improvement:**" — one actionable takeaway tied to a
 **Stonewall cheat sheet** ("our SW PDF", "our SW doc", "stonewall cheatsheet", "update the stonewall"):
 1. Read `skills/openings-coach/references/stonewall-notes.md`
 2. Update the canonical markdown/doc surface first
-3. Read `chess-db/generate_pdf.py` if a derived PDF export also needs updating
-4. Regenerate PDF only when needed: `python3 chess-db/generate_pdf.py`
+3. Read `chess_tools/generate_pdf.py` if a derived PDF export also needs updating
+4. Regenerate a PDF only when needed: `python3 chess_tools/generate_pdf.py`
 5. Treat the PDF as derived, not canonical
+6. In this repo family, derived outputs normally live in `chess-data-private/generated/`
 
 **French cheat sheet** ("French PDF", "French doc", "French cheatsheet", "update the French"):
 1. Update the canonical markdown/doc surface first
-2. Read `chess-db/tag_french.py` AND `chess-db/generate_french_pdf.py` if a derived PDF export also needs updating
-3. Regenerate PDF only when needed: `python3 chess-db/tag_french.py && python3 chess-db/generate_french_pdf.py`
+2. Read `chess_tools/tag_french.py` AND `chess_tools/generate_french_pdf.py` if a derived PDF export also needs updating
+3. Regenerate a PDF only when needed: `python3 chess_tools/tag_french.py && python3 chess_tools/generate_french_pdf.py`
 4. Treat the PDF as derived, not canonical
+5. In this repo family, derived outputs normally live in `chess-data-private/generated/`
 
 ---
 
@@ -173,9 +169,9 @@ End with "**Single biggest improvement:**" — one actionable takeaway tied to a
 
 When Dash asks about opening patterns/stats:
 
-1. Use `chess-db/parse_pgn.py` to query the appropriate database
+1. Use `chess_tools/parse_pgn.py` to query the appropriate local corpus
 2. For Stonewall, cross-reference with `skills/openings-coach/references/stonewall-notes.md` and the current corpus/generator — not old MEMORY snippets
-3. Always link to relevant lichess study games (ChapterURL header)
+3. Always link to relevant lichess study games (`ChapterURL` header)
 4. If the question spans both openings, compare them (e.g. "how does Aman handle bad bishops in SW vs French?")
 
 ---
@@ -184,16 +180,16 @@ When Dash asks about opening patterns/stats:
 
 | File | Purpose |
 |------|---------|
-| `chess-db/parse_pgn.py` | PGN parser (MANDATORY — never use regex) |
-| `chess-db/games.pgn` | All games (Stonewall + French + Habits) |
-| `chess-db/sources.txt` | Lichess study IDs |
-| `chess-db/generate_pdf.py` | Stonewall PDF export generator |
+| `chess_tools/parse_pgn.py` | PGN parser (MANDATORY — never use regex) |
+| local corpus PGN (typically `chess-data-private/corpora/games.pgn`) | Reference games for Stonewall + French + Habits |
+| source manifest (typically `chess-data-private/sources/merged-sources.txt`) | Lichess study IDs |
+| `chess_tools/generate_pdf.py` | Stonewall PDF export generator |
 | `skills/openings-coach/references/stonewall-notes.md` | Stonewall-local insights, migration state, anti-regression notes |
-| `chess-db/stonewall-cheatsheet.pdf` | Current Stonewall PDF export |
-| `chess-db/tag_french.py` | French game tagger |
-| `chess-db/generate_french_pdf.py` | French PDF export generator |
-| `chess-db/french-cheatsheet.pdf` | Current French PDF export |
-| `chess-db/tag_games.py` | General game tagger (if exists) |
+| `chess-data-private/generated/stonewall-cheatsheet.pdf` | Current Stonewall PDF export in this repo family |
+| `chess_tools/tag_french.py` | French game tagger |
+| `chess_tools/generate_french_pdf.py` | French PDF export generator |
+| `chess-data-private/generated/french-cheatsheet.pdf` | Current French PDF export in this repo family |
+| `chess_tools/tag_games.py` | General game tagger (if exists) |
 
 ## Critical Rules
 
