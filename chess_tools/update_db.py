@@ -1,25 +1,22 @@
 #!/usr/bin/env python3
-"""
-Update chess-db/games.pgn from lichess studies.
+"""Update a PGN corpus from one or more Lichess studies.
 
-Usage:
-    python3 update_db.py                     # Update all studies in sources.txt
-    python3 update_db.py STUDY_ID [ID2 ...]  # Update specific studies only
-
-Compares by ChapterURL. Replaces updated annotations, adds new games.
-Prints a summary of changes.
+Compares by ChapterURL. Replaces updated annotations, adds new games,
+and preserves game order where possible.
 """
 
-import sys
+from __future__ import annotations
+
+import argparse
 import os
 import re
 import subprocess
-import tempfile
 import time
+from pathlib import Path
 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-GAMES_PGN = os.path.join(SCRIPT_DIR, "games.pgn")
-SOURCES_TXT = os.path.join(SCRIPT_DIR, "sources.txt")
+SCRIPT_DIR = Path(__file__).resolve().parent
+DEFAULT_GAMES_PGN = SCRIPT_DIR / "games.pgn"
+DEFAULT_SOURCES_TXT = SCRIPT_DIR / "sources.txt"
 
 
 def parse_pgn_to_games(text):
@@ -90,18 +87,52 @@ def download_study(study_id):
         return None
 
 
-def main():
-    # Determine which studies to update
-    if len(sys.argv) > 1:
-        study_ids = sys.argv[1:]
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Update a PGN corpus from one or more Lichess studies.")
+    parser.add_argument("study_ids", nargs="*", help="Optional Lichess study ids to update explicitly")
+    parser.add_argument(
+        "--db",
+        default=str(DEFAULT_GAMES_PGN),
+        help="Path to the target PGN database (defaults to chess_tools/games.pgn if present)",
+    )
+    parser.add_argument(
+        "--sources",
+        default=str(DEFAULT_SOURCES_TXT),
+        help="Path to a text file containing one Lichess study id per line",
+    )
+    return parser
+
+
+def main(argv: list[str] | None = None):
+    parser = build_parser()
+    args = parser.parse_args(argv)
+
+    games_pgn = Path(args.db)
+    sources_txt = Path(args.sources)
+
+    if args.study_ids:
+        study_ids = args.study_ids
     else:
-        with open(SOURCES_TXT) as f:
+        if not sources_txt.exists():
+            raise SystemExit(
+                f"Sources file not found: {sources_txt}\n"
+                "Pass explicit study ids or provide --sources <sources.txt>."
+            )
+        with open(sources_txt) as f:
             study_ids = [line.strip() for line in f if line.strip()]
-    
-    # Load current database
-    with open(GAMES_PGN) as f:
+
+    if not study_ids:
+        raise SystemExit("No study ids provided. Pass study ids directly or via --sources.")
+
+    if not games_pgn.exists():
+        raise SystemExit(
+            f"PGN database not found: {games_pgn}\n"
+            "Create an initial PGN file or point --db at an existing corpus."
+        )
+
+    with open(games_pgn) as f:
         db_text = f.read()
-    
+
     db_games = parse_pgn_to_games(db_text)
     print(f"Current database: {len(db_games)} games")
     
@@ -165,7 +196,7 @@ def main():
     # Write updated database
     if total_new > 0 or total_updated > 0:
         # Backup
-        backup = GAMES_PGN + ".bak"
+        backup = games_pgn.with_suffix(games_pgn.suffix + ".bak")
         with open(backup, 'w') as f:
             f.write(db_text)
         print(f"\nBackup saved to {backup}")
@@ -176,10 +207,11 @@ def main():
             if url in db_by_url:
                 output_parts.append(db_by_url[url]['full_text'].strip())
         
-        with open(GAMES_PGN, 'w') as f:
+        with open(games_pgn, 'w') as f:
             f.write('\n\n\n'.join(output_parts) + '\n')
-        
-        new_games = parse_pgn_to_games(open(GAMES_PGN).read())
+
+        with open(games_pgn) as f:
+            new_games = parse_pgn_to_games(f.read())
         print(f"\nDatabase updated: {len(new_games)} games")
         print(f"Total: {total_new} new, {total_updated} updated, {total_unchanged} unchanged")
     else:

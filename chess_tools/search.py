@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-"""Search chess-db for games matching a move prefix."""
+"""Search a PGN corpus for games matching a move prefix."""
 
-import sys
+from __future__ import annotations
+
+import argparse
 import os
-import chess.pgn
+from pathlib import Path
 
-DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "games.pgn")
+DEFAULT_DB_PATH = Path(__file__).resolve().with_name("games.pgn")
 
 
 def normalize_san(move: str) -> str:
@@ -14,7 +16,14 @@ def normalize_san(move: str) -> str:
 
 
 def load_games(path: str):
-    """Yield (game_number, headers, mainline_sans) for each game."""
+    """Yield (game_number, headers, mainline_sans, study_name) for each game."""
+    try:
+        import chess.pgn  # type: ignore
+    except ModuleNotFoundError as e:
+        raise SystemExit(
+            "python-chess is required for search.py. Install dependencies first: pip install -r requirements.txt"
+        ) from e
+
     with open(path) as f:
         num = 0
         while True:
@@ -31,9 +40,8 @@ def load_games(path: str):
             yield num, game.headers, sans, study
 
 
-def search(query_moves: list[str], path: str = DB_PATH):
+def search(query_moves: list[str], path: str = str(DEFAULT_DB_PATH)):
     """Find games whose mainline starts with query_moves."""
-    # Normalize query
     query = [normalize_san(m) for m in query_moves]
     n = len(query)
     matches = []
@@ -57,18 +65,31 @@ def format_query(moves: list[str]) -> str:
     return " ".join(parts)
 
 
-def main():
-    if len(sys.argv) < 2:
-        print("Usage: python3 search.py <move1> <move2> ...")
-        print("Example: python3 search.py d4 d5 e3 Nc6")
-        sys.exit(1)
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Search a PGN corpus by opening move prefix.")
+    parser.add_argument("moves", nargs="+", help="SAN moves to match from the start of the main line")
+    parser.add_argument(
+        "--db",
+        default=str(DEFAULT_DB_PATH),
+        help="Path to the PGN corpus (defaults to chess_tools/games.pgn if present)",
+    )
+    return parser
 
-    query = sys.argv[1:]
-    matches = search(query)
+
+def main(argv: list[str] | None = None):
+    parser = build_parser()
+    args = parser.parse_args(argv)
+
+    db_path = Path(args.db)
+    if not db_path.exists():
+        raise SystemExit(f"PGN database not found: {db_path}")
+
+    query = args.moves
+    matches = search(query, path=str(db_path))
 
     if not matches:
         print(f'No games match "{format_query(query)}"')
-        sys.exit(0)
+        return 0
 
     label = "game" if len(matches) == 1 else "games"
     print(f'{len(matches)} {label} match "{format_query(query)}":\n')
@@ -85,7 +106,8 @@ def main():
             print(f"        Chapter: {chapter}")
         if url:
             print(f"        {url}")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

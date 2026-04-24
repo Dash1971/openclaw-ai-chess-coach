@@ -5,7 +5,7 @@
 Sync a study list into a local database:
 
 ```bash
-python3 chess_tools/update_db.py
+python3 chess_tools/update_db.py --sources examples/sample_sources.txt --db examples/sample_games.pgn
 ```
 
 Search a local PGN corpus:
@@ -35,7 +35,7 @@ Typical prompt:
 Download a chess.com player:
 
 ```bash
-python3 chess_tools/analyze_player.py <username> tmp/<username> --platform chesscom
+python3 skills/chess-opponent-scout/scripts/analyze_player.py <username> tmp/<username> --platform chesscom
 ```
 
 Typical prompt:
