@@ -9,6 +9,7 @@ It is designed for workflows such as:
 - extracting opening-study material from public accounts
 - generating concept documents and other study outputs from tagged games
 - pulling speedrun games from chess.com for later study import
+- transcribing scanned puzzle books into Lichess-importable PGN studies
 
 ---
 
@@ -58,6 +59,7 @@ The current configured openings are `stonewall` and `french`, but the layout is 
 - `chess-concepts` — maintain concept documents around recurring opening themes
 - `chess-db-sync` — sync study-based source material into the local database layer
 - `chess-speedrun-pgn-extractor` — fetch and chunk chess.com speedrun account games for later study ingestion
+- `chess-puzzles-to-pgn` — turn scanned chess puzzle books into multi-chapter PGN for Lichess study import
 
 ### Chess tools
 The `chess_tools/` layer contains the reusable code behind the workflows, including:
@@ -71,6 +73,7 @@ The `chess_tools/` layer contains the reusable code behind the workflows, includ
 
 ### Docs
 The `docs/` tree explains the architecture, setup, workflows, and search system.
+It also covers the scanned puzzle-book → Lichess-study transcription workflow.
 
 ### Examples
 The `examples/` tree is intentionally small:

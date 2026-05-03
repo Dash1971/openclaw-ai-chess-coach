@@ -8,6 +8,7 @@
 - opening-study extraction from public accounts
 - opening concept and study-output generation
 - chess.com speedrun PGN extraction for later study ingestion
+- scanned puzzle-book transcription into Lichess study chapters
 
 ## Generic opening-guide pipeline
 
@@ -48,6 +49,20 @@ python3 chess_tools/generate_opening_guide.py stonewall --input <output-dir>/sto
 python3 chess_tools/tag_opening.py french --db <games.pgn> --output <output-dir>/french.json
 python3 chess_tools/generate_opening_guide.py french --input <output-dir>/french.json --output <output-dir>/french-cheatsheet.pdf
 ```
+
+## Puzzle-book to study flow
+
+A practical puzzle-book conversion sequence is:
+
+1. rasterize a scanned workbook PDF into high-resolution page images
+2. crop each board with rank/file labels visible
+3. visually transcribe the pieces and side-to-move prompt
+4. run square-occupancy measurement on the crop to catch file/rank mistakes
+5. build a legal FEN for each diagram
+6. validate the FENs structurally
+7. assemble a multi-chapter PGN for Lichess study import
+
+This workflow is documented in more detail at [Puzzle-book to study](puzzle-book-to-study.md).
 
 ## Typical study flow
 
