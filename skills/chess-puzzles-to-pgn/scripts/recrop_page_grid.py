@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
 """
-Deterministically crop a 2-column x 3-row puzzle page into numbered board images.
+Deterministically crop a clean puzzle page into numbered board images using a
+user-declared grid shape.
 
-This is for clean book pages like the Counting Problems sample where board order
-must come from page layout, not detector/discovery order from earlier artifacts.
+This is for pages where board order must come from page layout, not from
+candidate/discovery order.
 
 Usage:
-  python recrop_page_grid.py --page page-2.png --labels 1-7,1-10,1-8,1-11,1-9,1-12 --out-dir out/page-2
+  python recrop_page_grid.py --page page-2.png --grid 3x2 \
+    --labels 1-7,1-10,1-8,1-11,1-9,1-12 --out-dir out/page-2
 
-The script finds 6 board-like squares on the page, sorts them top-to-bottom then
-left-to-right, pads each crop to include coordinate labels, and writes numbered crops.
+Grid semantics:
+- --grid is ROWSxCOLS in reading order.
+- labels must be supplied in reading order for that grid.
+- the script finds board-like squares, clusters them into the declared row/column
+  layout, pads each crop to include coordinate labels, and writes numbered crops.
 """
 
 import argparse
@@ -20,7 +25,7 @@ from PIL import Image
 import numpy as np
 
 
-def find_boxes(page_path: Path):
+def find_boxes(page_path: Path, expected_rows: int = 3, expected_cols: int = 2):
     img = cv2.imread(str(page_path), cv2.IMREAD_GRAYSCALE)
     if img is None:
         raise SystemExit(f"Could not read page: {page_path}")
@@ -40,10 +45,11 @@ def find_boxes(page_path: Path):
         if area >= 0.3 * w * h:
             continue
         boxes.append((x, y, bw, bh))
-    if len(boxes) != 6:
-        raise SystemExit(f"Expected 6 board boxes, found {len(boxes)} on {page_path}")
+    expected_count = expected_rows * expected_cols
+    if len(boxes) != expected_count:
+        raise SystemExit(f"Expected {expected_count} board boxes, found {len(boxes)} on {page_path}")
 
-    # Robust reading order: cluster into 3 rows by y-center, then sort left-to-right within each row.
+    # Robust reading order: cluster into declared rows by y-center, then sort left-to-right within each row.
     centers = sorted(((y + bh / 2), i) for i, (x, y, bw, bh) in enumerate(boxes))
     rows = []
     row_threshold = 80
@@ -58,8 +64,10 @@ def find_boxes(page_path: Path):
         if not placed:
             rows.append({'avg': cy, 'items': [(cy, idx)]})
     rows.sort(key=lambda r: r['avg'])
-    if len(rows) != 3 or any(len(r['items']) != 2 for r in rows):
-        raise SystemExit(f"Could not form 3 rows of 2 boards on {page_path}: {rows}")
+    if len(rows) != expected_rows or any(len(r['items']) != expected_cols for r in rows):
+        raise SystemExit(
+            f"Could not form {expected_rows} rows of {expected_cols} boards on {page_path}: {rows}"
+        )
     ordered = []
     for row in rows:
         row_boxes = [boxes[idx] for _, idx in row['items']]
@@ -71,6 +79,7 @@ def find_boxes(page_path: Path):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--page", type=Path, required=True)
+    ap.add_argument("--grid", required=True, help="Declared layout as ROWSxCOLS, e.g. 3x2 or 2x2")
     ap.add_argument("--labels", required=True, help="Comma-separated labels in reading order")
     ap.add_argument("--out-dir", type=Path, required=True)
     ap.add_argument("--pad-left", type=int, default=70)
@@ -79,11 +88,18 @@ def main():
     ap.add_argument("--pad-bottom", type=int, default=80)
     args = ap.parse_args()
 
-    labels = [x.strip() for x in args.labels.split(",") if x.strip()]
-    if len(labels) != 6:
-        raise SystemExit("--labels must contain exactly 6 labels")
+    if "x" not in args.grid.lower():
+        raise SystemExit("--grid must look like ROWSxCOLS, e.g. 3x2")
+    rows_s, cols_s = args.grid.lower().split("x", 1)
+    expected_rows = int(rows_s)
+    expected_cols = int(cols_s)
+    expected_count = expected_rows * expected_cols
 
-    boxes = find_boxes(args.page)
+    labels = [x.strip() for x in args.labels.split(",") if x.strip()]
+    if len(labels) != expected_count:
+        raise SystemExit(f"--labels must contain exactly {expected_count} labels for grid {args.grid}")
+
+    boxes = find_boxes(args.page, expected_rows=expected_rows, expected_cols=expected_cols)
     page = Image.open(args.page).convert("RGB")
     args.out_dir.mkdir(parents=True, exist_ok=True)
 

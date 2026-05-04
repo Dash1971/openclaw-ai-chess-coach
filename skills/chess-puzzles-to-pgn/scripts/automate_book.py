@@ -2,7 +2,7 @@
 """
 Automate the front half of the puzzle-book workflow:
 - rasterize a PDF into page images (optional)
-- either detect likely board regions OR deterministically recrop clean 2x3 pages
+- either detect likely board regions OR deterministically recrop declared-grid pages
 - crop them into a review directory
 - build a JSON manifest for the remaining human verification steps
 
@@ -10,7 +10,7 @@ USAGE:
     python automate_book.py --pdf input.pdf --output-dir out/book
     python automate_book.py --pages-dir out/book/pages --output-dir out/book
     python automate_book.py --pages-dir out/book/pages --output-dir out/book \
-        --grid-page "page-2.png:1-7,1-10,1-8,1-11,1-9,1-12"
+        --grid-page "page-2.png:3x2:1-7,1-10,1-8,1-11,1-9,1-12"
 """
 
 import argparse
@@ -58,13 +58,22 @@ def build_summary(manifest_rows):
     }
 
 
-def grid_recrop_page(page_image, labels, crops_dir):
+def grid_recrop_page(page_image, grid_spec, labels, crops_dir):
     page_image = Path(page_image)
-    labels = [x.strip() for x in labels.split(",") if x.strip()]
-    if len(labels) != 6:
-        raise SystemExit(f"Grid page {page_image.name} needs exactly 6 labels, got {len(labels)}")
+    if "x" not in grid_spec.lower():
+        raise SystemExit(f"Grid page {page_image.name} needs ROWSxCOLS grid spec, got {grid_spec!r}")
+    rows_s, cols_s = grid_spec.lower().split("x", 1)
+    expected_rows = int(rows_s)
+    expected_cols = int(cols_s)
+    expected_count = expected_rows * expected_cols
 
-    boxes = find_boxes(page_image)
+    labels = [x.strip() for x in labels.split(",") if x.strip()]
+    if len(labels) != expected_count:
+        raise SystemExit(
+            f"Grid page {page_image.name} needs exactly {expected_count} labels for grid {grid_spec}, got {len(labels)}"
+        )
+
+    boxes = find_boxes(page_image, expected_rows=expected_rows, expected_cols=expected_cols)
     img = Image.open(page_image).convert("RGB")
     rows = []
     for (x, y, w, h), label in zip(boxes, labels):
@@ -106,7 +115,7 @@ def main():
         "--grid-page",
         action="append",
         default=[],
-        help="Deterministic 2x3 recrop override: 'page-filename.png:label1,label2,label3,label4,label5,label6' in reading order.",
+        help="Deterministic grid recrop override: 'page-filename.png:ROWSxCOLS:label1,label2,...' in reading order.",
     )
     args = parser.parse_args()
 
@@ -133,15 +142,17 @@ def main():
 
     grid_map = {}
     for item in args.grid_page:
-        if ":" not in item:
+        parts = item.split(":", 2)
+        if len(parts) != 3:
             raise SystemExit(f"Bad --grid-page entry: {item!r}")
-        name, labels = item.split(":", 1)
-        grid_map[name.strip()] = labels.strip()
+        name, grid_spec, labels = parts
+        grid_map[name.strip()] = (grid_spec.strip(), labels.strip())
 
     all_rows = []
     for page_image in page_images:
         if page_image.name in grid_map:
-            rows = grid_recrop_page(page_image, grid_map[page_image.name], crops_dir)
+            grid_spec, labels = grid_map[page_image.name]
+            rows = grid_recrop_page(page_image, grid_spec, labels, crops_dir)
             all_rows.extend(rows)
             print(f"{page_image.name}: {len(rows)} deterministic grid crop(s)")
             continue

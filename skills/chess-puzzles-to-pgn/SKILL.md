@@ -19,6 +19,14 @@ The third most important rule: **raw OCR / model / engine output is never final 
 
 For clean multi-diagram pages, board numbering must come from deterministic full-page recrops in reading order, not from any pre-existing manual crop filenames or detector output order.
 
+Important: **2x3 is not a universal assumption.** It is one supported layout mode for clean puzzle-book pages. Other books may use 1x2, 2x2, 3x3, mixed counts, composites, or irregular placements.
+
+Supported safe modes now are:
+- detector/discovery + explicit review mapping
+- declared-grid deterministic recrops (for example `3x2`, `2x2`, `1x2`) when the page layout is regular and known
+
+If the page has multiple diagrams and you do not know the layout, fail closed: do not trust automated numbering until the layout is declared or explicitly reviewed.
+
 ## Setup
 
 This skill uses Python plus two packages for image analysis: `numpy` and `Pillow`.
@@ -61,6 +69,8 @@ What is still manual on purpose:
 
 What must never happen again:
 - treating detector order as chapter order without explicit reading-order mapping
+- treating one page-layout assumption (like 2x3) as universal when the source format differs
+- auto-numbering a multi-diagram page without either a declared grid or explicit review mapping
 - treating model output as authoritative without source-image audit
 - sending an engine-rebuilt PGN before square-by-square verification is complete
 
@@ -89,6 +99,24 @@ Make a list before transcribing. Don't transcribe as you go.
 ### 2. Crop each diagram
 
 You can now automate the initial crop-discovery step:
+
+For regular clean pages with a known layout, prefer declared-grid recrops so numbering is deterministic:
+
+```bash
+python scripts/automate_book.py --pages-dir pages --output-dir out/book \
+  --grid-page "page-2.png:3x2:1-7,1-10,1-8,1-11,1-9,1-12"
+```
+
+Or directly:
+
+```bash
+python scripts/recrop_page_grid.py --page page-2.png --grid 3x2 \
+  --labels 1-7,1-10,1-8,1-11,1-9,1-12 --out-dir out/page-2
+```
+
+If the page layout is not known, do **not** guess a grid. Use detection plus explicit review instead.
+
+You can also automate the initial crop-discovery step:
 
 ```bash
 python scripts/automate_book.py --pdf input.pdf --output-dir out/book --annotate
